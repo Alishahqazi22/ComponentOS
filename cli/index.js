@@ -4,7 +4,16 @@ const https = require("https");
 const { execSync } = require("child_process");
 
 const args = process.argv.slice(2);
-const command = args[0] || "help";
+// Extract global flags (--yes, --overwrite, --version)
+const globalFlags = {
+  yes: args.includes("--yes") || args.includes("-y"),
+  overwrite: args.includes("--overwrite") || args.includes("-f"),
+  version: args.includes("--version") || args.includes("-v"),
+};
+
+// Remove flags from args for command parsing
+const filteredArgs = args.filter((a) => !["--yes", "-y", "--overwrite", "-f", "--version", "-v"].includes(a));
+const command = filteredArgs[0] || "help";
 const cwd = process.cwd();
 
 // ANSI color helpers
@@ -862,12 +871,26 @@ function runInit() {
   log(`\n${colors.bright}${colors.cyan}ComponentOS CLI — Project Initialization${colors.reset}\n`);
 
   const configPath = path.join(cwd, "componentos.json");
+  // Detect basic project layout
+  const pkgPath = path.join(cwd, "package.json");
+  let pkg = null;
+  if (fs.existsSync(pkgPath)) {
+    try {
+      pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    } catch (e) {}
+  }
+
+  const hasAppDir = fs.existsSync(path.join(cwd, "app"));
+  const hasPages = fs.existsSync(path.join(cwd, "pages"));
+  const hasSrc = fs.existsSync(path.join(cwd, "src"));
+  const isNext = !!(pkg && pkg.dependencies && pkg.dependencies.next) || hasAppDir || hasPages;
+
   const config = {
     $schema: "https://componentos.dev/schemas/config.json",
     style: "default",
     tailwind: {
       config: "tailwind.config.js",
-      css: "app/globals.css",
+      css: hasAppDir ? "app/globals.css" : (hasSrc ? "src/input.css" : "styles/globals.css"),
       baseColor: "slate",
       cssVariables: true
     },
@@ -876,7 +899,10 @@ function runInit() {
       utils: "@/lib/utils",
       ui: "@/components/ui"
     },
-    registry: "https://componentos.dev/registry"
+    registry: "https://componentos.dev/registry",
+    project: {
+      type: isNext ? "next" : (hasSrc ? "vite" : "unknown")
+    }
   };
 
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf8");
@@ -917,9 +943,22 @@ function runAdd(targets) {
 
   log(`\n${colors.bright}${colors.cyan}ComponentOS Registry Installer${colors.reset}\n`);
 
+  // Ensure we're in a project with package.json
+  const pkgPath = path.join(cwd, "package.json");
+  if (!fs.existsSync(pkgPath)) {
+    error("No package.json found in the current directory. Run this inside a Node/React project.");
+    return;
+  }
+
   const installedFiles = [];
   const missingNpmPackages = new Set();
   const processedItems = new Set();
+
+  // Respect global flags
+  const assumeYes = globalFlags.yes;
+  const forceOverwrite = globalFlags.overwrite;
+
+  const prompts = require("prompts");
 
   function resolveItem(itemName) {
     const key = itemName.toLowerCase();
@@ -1021,9 +1060,32 @@ export function ${title.replace(/\s+/g, "")}({
     item.files.forEach((file) => {
       const targetPath = path.join(cwd, file.target);
       ensureDirSync(path.dirname(targetPath));
-      fs.writeFileSync(targetPath, file.content, "utf8");
-      installedFiles.push(file.target);
-      success(`Added ${file.target}`);
+
+      let writeFile = true;
+      if (fs.existsSync(targetPath) && !forceOverwrite) {
+        if (assumeYes) {
+          writeFile = true;
+        } else {
+          // ask user
+          const response = prompts.sync
+            ? prompts.sync({ type: "confirm", name: "ok", message: `${file.target} already exists. Overwrite?`, initial: false })
+            : null;
+
+          // If prompts.sync not available (older prompts), fall back to skip
+          if (response && response.ok === true) {
+            writeFile = true;
+          } else {
+            writeFile = false;
+            info(`Skipped ${file.target}`);
+          }
+        }
+      }
+
+      if (writeFile) {
+        fs.writeFileSync(targetPath, file.content, "utf8");
+        installedFiles.push(file.target);
+        success(`Added ${file.target}`);
+      }
     });
   }
 
@@ -1034,7 +1096,7 @@ export function ${title.replace(/\s+/g, "")}({
     try {
       execSync(`npm install ${Array.from(missingNpmPackages).join(" ")}`, {
         cwd,
-        stdio: "ignore"
+        stdio: "inherit"
       });
       success("NPM packages installed successfully.");
     } catch (e) {
@@ -1069,17 +1131,53 @@ function runList(query) {
   log("");
 }
 
+function runInfo(name) {
+  if (!name) {
+    warn("Please specify a component name. Example: npx componentos info button");
+    return;
+  }
+  const key = name.toLowerCase();
+  const item = REGISTRY_DB[key];
+  if (!item) {
+    error(`ComponentOS could not find "${name}" in the registry.`);
+    return;
+  }
+
+  log(`\n${colors.bright}${colors.cyan}Component: ${item.name}${colors.reset}\n`);
+  log(`Description: ${item.description || "-"}`);
+  log(`Version: ${item.version || "-"}`);
+  log(`Dependencies: ${(item.dependencies || []).join(", ") || "-"}`);
+  log(`Registry dependencies: ${(item.registryDependencies || []).join(", ") || "-"}`);
+  log(`Files:`);
+  (item.files || []).forEach((f) => log(`  - ${f.target}`));
+  log("");
+}
+
 // Command dispatcher
+if (globalFlags.version) {
+  // Try to read package.json version
+  try {
+    const rootPkg = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "package.json"), "utf8"));
+    log(rootPkg.version || "");
+  } catch (e) {
+    // fallback
+    log("");
+  }
+  process.exit(0);
+}
 switch (command) {
   case "init":
     runInit();
     break;
   case "add":
-    runAdd(args.slice(1));
+    runAdd(filteredArgs.slice(1));
     break;
   case "list":
   case "search":
-    runList(args[1]);
+    runList(filteredArgs[1]);
+    break;
+  case "info":
+    runInfo(filteredArgs[1]);
     break;
   case "help":
   default:

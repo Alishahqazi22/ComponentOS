@@ -62,9 +62,9 @@ export function Footer() {
 
       <div className="container max-w-screen-2xl mx-auto border-t border-border/40 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-4 px-4">
         <p>© 2026 ComponentOS Platform. Designed for modern high-performance Web Apps.</p>
-        <p className="flex items-center gap-1">
+        {/* <p className="flex items-center gap-1">
           Built with <Heart className="h-3 w-3 text-red-500 fill-red-500" /> for Developers & Designers worldwide.
-        </p>
+        </p> */}
       </div>
     </footer>
   );

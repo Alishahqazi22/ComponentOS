@@ -13,7 +13,7 @@
     "start": "next start",
     "lint": "next lint",
     "cli": "node bin/componentos.js",
-    "test": "node scripts/test-registry.js"
+    "test": "node scripts/test-registry.js && node scripts/test-cli.js"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.1",

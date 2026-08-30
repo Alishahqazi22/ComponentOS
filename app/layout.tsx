@@ -5,6 +5,15 @@ import { ClientProviders } from "@/components/ClientProviders";
 export const metadata: Metadata = {
   title: "ComponentOS — The Open Component Infrastructure",
   description: "Production-ready open component infrastructure platform inspired by shadcn/ui. Source-based distribution, CLI ecosystem, and rich component taxonomy.",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.png",
+  },
 };
 
 export const viewport: Viewport = {

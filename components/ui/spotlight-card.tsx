@@ -2,13 +2,17 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Loader2, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
-export interface SpotlightcardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SpotlightcardProps {
   variant?: "default" | "outline" | "secondary" | "glass";
   size?: "sm" | "default" | "lg";
   animated?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
+  style?: React.CSSProperties;
 }
 
 export function Spotlightcard({
@@ -17,10 +21,11 @@ export function Spotlightcard({
   size = "default",
   animated = true,
   children,
-  ...props
+  onClick,
+  style,
 }: SpotlightcardProps) {
   const baseClasses = cn(
-    "inline-flex items-center justify-center rounded-xl p-4 transition-all duration-300 font-medium text-sm border",
+    "inline-flex items-center justify-center rounded-xl p-4 transition-all duration-300 font-medium text-sm border cursor-pointer",
     variant === "default" && "bg-primary text-primary-foreground border-transparent shadow-md hover:bg-primary/90",
     variant === "outline" && "border-border bg-card text-foreground hover:bg-accent",
     variant === "secondary" && "bg-secondary text-secondary-foreground border-transparent",
@@ -39,7 +44,8 @@ export function Spotlightcard({
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
         className={baseClasses}
-        {...props}
+        onClick={onClick as any}
+        style={style}
       >
         <Sparkles className="w-4 h-4 mr-2 text-primary animate-pulse" />
         {children || "Spotlight card (Animated Motion)"}
@@ -48,7 +54,7 @@ export function Spotlightcard({
   }
 
   return (
-    <div className={baseClasses} {...props}>
+    <div className={baseClasses} onClick={onClick} style={style}>
       {children || "Spotlight card"}
     </div>
   );

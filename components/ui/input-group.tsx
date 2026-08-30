@@ -3,14 +3,16 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface InputGroupProps {
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
+  className?: string;
+  children?: React.ReactNode;
 }
 
-export function InputGroup({ prefix, suffix, className, children, ...props }: InputGroupProps) {
+export function InputGroup({ prefix, suffix, className, children }: InputGroupProps) {
   return (
-    <div className={cn("relative flex items-center w-full", className)} {...props}>
+    <div className={cn("relative flex items-center w-full", className)}>
       {prefix && (
         <span className="absolute left-3 flex items-center pointer-events-none text-muted-foreground text-sm">
           {prefix}

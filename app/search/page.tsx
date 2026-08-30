@@ -3,13 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search as SearchIcon, ArrowRight, Package, Terminal } from "lucide-react";
+import { Search as SearchIcon, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { COMPONENT_REGISTRY } from "@/registry";
 
-export default function SearchPage() {
+// Inner component that uses useSearchParams — must be wrapped in <Suspense>
+function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const [query, setQuery] = React.useState(initialQuery);
@@ -34,7 +34,9 @@ export default function SearchPage() {
       <div className="space-y-3 max-w-xl">
         <Badge variant="outline">Catalog Search</Badge>
         <h1 className="text-4xl font-extrabold tracking-tight">Search ComponentOS</h1>
-        <p className="text-sm text-muted-foreground">Find UI primitives, animated cards, blocks, and CLI commands instantly.</p>
+        <p className="text-sm text-muted-foreground">
+          Find UI primitives, animated cards, blocks, and CLI commands instantly.
+        </p>
       </div>
 
       <div className="relative max-w-2xl">
@@ -52,7 +54,7 @@ export default function SearchPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
           <span>Found {results.length} results</span>
-          {query && <span>Query: "{query}"</span>}
+          {query && <span>Query: &quot;{query}&quot;</span>}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -79,5 +81,33 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Fallback skeleton shown during Suspense
+function SearchFallback() {
+  return (
+    <div className="container max-w-screen-xl mx-auto py-12 px-4 space-y-8">
+      <div className="space-y-3 max-w-xl">
+        <div className="h-5 w-24 rounded bg-muted animate-pulse" />
+        <div className="h-10 w-72 rounded bg-muted animate-pulse" />
+        <div className="h-4 w-96 rounded bg-muted animate-pulse" />
+      </div>
+      <div className="h-12 max-w-2xl rounded-xl bg-muted animate-pulse" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-36 rounded-xl bg-muted animate-pulse" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Default export wraps the search UI in Suspense (required for useSearchParams in Next.js 14)
+export default function SearchPage() {
+  return (
+    <React.Suspense fallback={<SearchFallback />}>
+      <SearchContent />
+    </React.Suspense>
   );
 }

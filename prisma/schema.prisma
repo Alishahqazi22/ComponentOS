@@ -1,0 +1,64 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  AUTHOR
+  MAINTAINER
+  ADMIN
+}
+
+enum ComponentStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  DEPRECATED
+  ARCHIVED
+}
+
+model User {
+  id            String      @id @default(cuid())
+  name          String?
+  email         String      @unique
+  role          Role        @default(USER)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  components    Component[] @relation("AuthorComponents")
+}
+
+model Category {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  name        String
+  description String?
+  components  Component[]
+  createdAt   DateTime    @default(now())
+}
+
+model Component {
+  id           String          @id @default(cuid())
+  slug         String          @unique
+  name         String
+  title        String
+  description  String
+  type         String          @default("micro")
+  status       ComponentStatus @default(PUBLISHED)
+  qualityScore Float           @default(5.0)
+  isOfficial   Boolean         @default(true)
+  license      String          @default("MIT")
+
+  authorId     String
+  author       User            @relation("AuthorComponents", fields: [authorId], references: [id])
+
+  categoryId   String
+  category     Category        @relation(fields: [categoryId], references: [id])
+
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}

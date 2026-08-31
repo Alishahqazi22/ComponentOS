@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE_URL = "https://componentos.dev";
+const BASE_URL = "https://component-os.vercel.app/";
 
 // Static pages of the site
 const staticRoutes: { url: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [

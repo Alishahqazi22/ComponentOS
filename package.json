@@ -1,8 +1,10 @@
 {
   "name": "componentos",
   "version": "1.0.0",
-  "private": true,
   "description": "The Open Component Infrastructure for Modern Web Apps",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "cli/index.js",
   "bin": {
     "componentos": "./bin/componentos.js"

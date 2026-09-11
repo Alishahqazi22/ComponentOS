@@ -12,5 +12,5 @@
     "utils": "@/lib/utils",
     "ui": "@/components/ui"
   },
-  "registry": "https://componentos.dev/registry"
+  "registry": "https://component-os.vercel.app/api/registry"
 }

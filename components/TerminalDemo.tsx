@@ -63,10 +63,10 @@ export function TerminalDemo() {
   const getCommandString = () => {
     const subCmd = presets[selectedPreset]?.cmd || "add button";
     switch (pkgManager) {
-      case "pnpm": return `pnpm dlx componentos ${subCmd}`;
-      case "yarn": return `yarn dlx componentos ${subCmd}`;
-      case "bun": return `bunx componentos ${subCmd}`;
-      default: return `npx componentos ${subCmd}`;
+      case "pnpm": return `pnpm dlx @qazialishah/componentos ${subCmd}`;
+      case "yarn": return `yarn dlx @qazialishah/componentos ${subCmd}`;
+      case "bun": return `bunx @qazialishah/componentos ${subCmd}`;
+      default: return `npx @qazialishah/componentos ${subCmd}`;
     }
   };
 

@@ -512,10 +512,10 @@ export default function ComponentDetailPage() {
 
   const getCmd = () => {
     switch (pkgManager) {
-      case "pnpm": return `pnpm dlx componentos add ${slug}`;
-      case "yarn": return `yarn dlx componentos add ${slug}`;
-      case "bun": return `bunx componentos add ${slug}`;
-      default: return `npx componentos add ${slug}`;
+      case "pnpm": return `pnpm dlx @qazialishah/componentos add ${slug}`;
+      case "yarn": return `yarn dlx @qazialishah/componentos add ${slug}`;
+      case "bun": return `bunx @qazialishah/componentos add ${slug}`;
+      default: return `npx @qazialishah/componentos add ${slug}`;
     }
   };
 

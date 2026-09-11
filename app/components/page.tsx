@@ -108,7 +108,7 @@ function ComponentsCatalogContent() {
   const copyCliCommand = (slug: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigator.clipboard.writeText(`npx componentos add ${slug}`);
+    navigator.clipboard.writeText(`npx @qazialishah/componentos add ${slug}`);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
   };
@@ -272,7 +272,7 @@ function ComponentsCatalogContent() {
               {/* CLI Command Box */}
               <div className="pt-3 mt-3 border-t border-border/40 flex items-center justify-between font-mono text-[11px]">
                 <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded truncate max-w-[170px]">
-                  npx componentos add {item.slug}
+                  npx @qazialishah/componentos add {item.slug}
                 </span>
                 <button
                   onClick={(e) => copyCliCommand(item.slug, e)}

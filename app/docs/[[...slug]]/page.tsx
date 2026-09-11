@@ -98,7 +98,7 @@ export default function DocsPage() {
               <div className="rounded-xl border border-border bg-card p-6 space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-base font-mono text-primary">
-                    npx componentos init
+                    npx @qazialishah/componentos init
                   </h3>
                   <Badge variant="secondary">Setup Command</Badge>
                 </div>
@@ -106,9 +106,9 @@ export default function DocsPage() {
                   Initializes your project workspace by analyzing Tailwind CSS variables, path aliases (<code className="font-mono">@/components</code>), creating <code className="font-mono">componentos.json</code>, and adding <code className="font-mono">@/lib/utils.ts</code> with the <code className="font-mono">cn()</code> helper.
                 </p>
                 <div className="bg-slate-950 p-3 rounded-lg font-mono text-xs text-cyan-400 flex items-center justify-between">
-                  <span>$ npx componentos init</span>
+                  <span>$ npx @qazialishah/componentos init</span>
                   <button
-                    onClick={() => copyText("init", "npx componentos init")}
+                    onClick={() => copyText("init", "npx @qazialishah/componentos init")}
                     className="text-slate-400 hover:text-slate-100"
                   >
                     {copiedId === "init" ? (
@@ -123,7 +123,7 @@ export default function DocsPage() {
               <div className="rounded-xl border border-border bg-card p-6 space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-base font-mono text-primary">
-                    npx componentos add [component-names...] [--animated]
+                    npx @qazialishah/componentos add [component-names...] [--animated]
                   </h3>
                   <Badge variant="secondary">Install Command</Badge>
                 </div>
@@ -131,12 +131,12 @@ export default function DocsPage() {
                   Downloads component TSX source code, recursively resolves sub-component dependencies, installs missing npm packages (<code className="font-mono">framer-motion</code>, <code className="font-mono">lucide-react</code>, <code className="font-mono">clsx</code>), and formats code for your local project. Pass <code className="font-mono">--animated</code> to convert simple components into Framer Motion spring components!
                 </p>
                 <div className="bg-slate-950 p-3 rounded-lg font-mono text-xs text-cyan-400 flex items-center justify-between">
-                  <span>$ npx componentos add button data-table --animated</span>
+                  <span>$ npx @qazialishah/componentos add button data-table --animated</span>
                   <button
                     onClick={() =>
                       copyText(
                         "add",
-                        "npx componentos add button data-table --animated"
+                        "npx @qazialishah/componentos add button data-table --animated"
                       )
                     }
                     className="text-slate-400 hover:text-slate-100"
@@ -480,12 +480,12 @@ export function AnimatedButtonDemo() {
                   Add Desired Components or Animated Motion FX
                 </h3>
                 <div className="flex items-center justify-between rounded-xl border border-border bg-slate-950 px-4 py-3 font-mono text-xs text-slate-200">
-                  <span>$ npx componentos add button data-table --animated</span>
+                  <span>$ npx @qazialishah/componentos add button data-table --animated</span>
                   <button
                     onClick={() =>
                       copyText(
                         "step2",
-                        "npx componentos add button data-table --animated"
+                        "npx @qazialishah/componentos add button data-table --animated"
                       )
                     }
                     className="text-slate-400 hover:text-slate-100"

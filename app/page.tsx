@@ -97,7 +97,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-semibold">Recursive CLI Dependency Resolver</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Running `npx componentos add dashboard` automatically resolves dependent primitives (cards, data tables, buttons) and installs missing npm packages seamlessly.
+                Running `npx @qazialishah/componentos add dashboard` automatically resolves dependent primitives (cards, data tables, buttons) and installs missing npm packages seamlessly.
               </p>
             </div>
 
@@ -153,7 +153,7 @@ export default function HomePage() {
 
                 <div className="pt-4 border-t border-border/40 mt-4 flex items-center justify-between text-xs font-mono text-muted-foreground">
                   <span className="bg-muted px-2 py-0.5 rounded text-[10px]">
-                    npx componentos add {item.slug}
+                    npx @qazialishah/componentos add {item.slug}
                   </span>
                   <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
                 </div>

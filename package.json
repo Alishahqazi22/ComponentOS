@@ -1,5 +1,5 @@
 {
-  "name": "componentos",
+  "name": "@qazialishah/componentos",
   "version": "1.0.0",
   "description": "The Open Component Infrastructure for Modern Web Apps",
   "publishConfig": {
@@ -7,7 +7,8 @@
   },
   "main": "cli/index.js",
   "bin": {
-    "componentos": "./bin/componentos.js"
+    "componentos": "./bin/componentos.js",
+    "@qazialishah/componentos": "./bin/componentos.js"
   },
   "files": [
     "bin",

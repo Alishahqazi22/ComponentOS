@@ -153,12 +153,24 @@ function detectProject(targetDir = cwd) {
     componentsDir = path.join(targetDir, "components", "ui");
   }
 
-  // Determine utils directory & file path
+  // Determine utils directory & file path (reuse existing if already present)
   let utilsPath;
+  const potentialUtils = [
+    path.join(targetDir, "src", "lib", "utils.ts"),
+    path.join(targetDir, "src", "lib", "utils.js"),
+    path.join(targetDir, "lib", "utils.ts"),
+    path.join(targetDir, "lib", "utils.js"),
+    path.join(targetDir, "src", "utils.ts"),
+    path.join(targetDir, "src", "utils.js"),
+  ];
+  const existingUtil = potentialUtils.find((p) => fs.existsSync(p));
+
   if (config && config.aliases && config.aliases.utils) {
     const rawUtilsAlias = config.aliases.utils.replace(/^@\//, "");
     const ext = isTypeScript ? ".ts" : ".js";
     utilsPath = path.join(targetDir, rawUtilsAlias.endsWith(".ts") || rawUtilsAlias.endsWith(".js") ? rawUtilsAlias : `${rawUtilsAlias}${ext}`);
+  } else if (existingUtil) {
+    utilsPath = existingUtil;
   } else if (hasSrc) {
     utilsPath = path.join(targetDir, "src", "lib", isTypeScript ? "utils.ts" : "utils.js");
   } else {
@@ -374,12 +386,32 @@ function getBundledCatalog() {
 
 function loadBundledPrimitives() {
   return {
+    utils: {
+      name: "utils",
+      slug: "utils",
+      version: "1.0.0",
+      dependencies: ["clsx", "tailwind-merge"],
+      registryDependencies: [],
+      files: [
+        {
+          path: "lib/utils.ts",
+          target: "lib/utils.ts",
+          content: `import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+`,
+        },
+      ],
+    },
     button: {
       name: "button",
       slug: "button",
       version: "1.2.0",
-      dependencies: ["class-variance-authority", "clsx", "tailwind-merge", "lucide-react"],
-      registryDependencies: [],
+      dependencies: ["class-variance-authority", "lucide-react"],
+      registryDependencies: ["utils"],
       files: [
         {
           path: "components/ui/button.tsx",
@@ -1005,38 +1037,221 @@ export function DataTable<T extends Record<string, any>>({
     "kanban-board": {
       name: "kanban-board",
       slug: "kanban-board",
-      version: "1.0.0",
+      version: "1.1.0",
       dependencies: ["lucide-react", "clsx", "tailwind-merge"],
-      registryDependencies: ["badge", "button", "card"],
+      registryDependencies: ["badge", "utils"],
       files: [
         {
           path: "components/advanced/kanban-board.tsx",
           target: "components/advanced/kanban-board.tsx",
           content: `"use client";
+
 import * as React from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2, ArrowRight, ArrowLeft, CheckCircle2, CircleDashed, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+interface Task {
+  id: string;
+  title: string;
+  tag: string;
+  priority: "low" | "medium" | "high";
+  status: "todo" | "in-progress" | "done";
+}
+
+const INITIAL_TASKS: Task[] = [
+  { id: "1", title: "Setup Tailwind v4 Design Tokens", tag: "Design", priority: "high", status: "todo" },
+  { id: "2", title: "Integrate ComponentOS CLI", tag: "DevOps", priority: "medium", status: "in-progress" },
+  { id: "3", title: "Verify Multi-Framework Compatibility", tag: "Testing", priority: "high", status: "done" },
+  { id: "4", title: "Add Accessible Keyboard Navigation", tag: "A11y", priority: "low", status: "todo" },
+];
+
+const COLUMNS = [
+  { id: "todo", title: "To Do", icon: CircleDashed, color: "text-amber-500" },
+  { id: "in-progress", title: "In Progress", icon: Clock, color: "text-blue-500" },
+  { id: "done", title: "Completed", icon: CheckCircle2, color: "text-emerald-500" },
+] as const;
 
 export function KanbanBoard() {
+  const [tasks, setTasks] = React.useState<Task[]>(INITIAL_TASKS);
+  const [newTaskTitle, setNewTaskTitle] = React.useState("");
+  const [activeColumn, setActiveColumn] = React.useState<"todo" | "in-progress" | "done">("todo");
+  const [isAdding, setIsAdding] = React.useState(false);
+
+  const handleAddTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim()) return;
+    const newTask: Task = {
+      id: Date.now().toString(),
+      title: newTaskTitle.trim(),
+      tag: "Feature",
+      priority: "medium",
+      status: activeColumn,
+    };
+    setTasks((prev) => [newTask, ...prev]);
+    setNewTaskTitle("");
+    setIsAdding(false);
+  };
+
+  const moveTask = (taskId: string, direction: "prev" | "next") => {
+    const columnOrder: Task["status"][] = ["todo", "in-progress", "done"];
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== taskId) return t;
+        const currentIndex = columnOrder.indexOf(t.status);
+        const newIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
+        if (newIndex < 0 || newIndex >= columnOrder.length) return t;
+        return { ...t, status: columnOrder[newIndex] };
+      })
+    );
+  };
+
+  const deleteTask = (taskId: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-bold">To Do</CardTitle>
-          <Button variant="ghost" size="icon" className="h-6 w-6"><Plus className="h-4 w-4" /></Button>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="p-3 rounded-lg border border-border bg-background space-y-2">
-            <div className="text-xs font-semibold">Integrate ComponentOS CLI</div>
-            <Badge variant="outline" className="text-[10px]">Setup</Badge>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="w-full space-y-4">
+      {/* Header with Quick Add */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl border border-border bg-card shadow-xs">
+        <div>
+          <h3 className="font-bold text-base text-foreground">Project Sprint Board</h3>
+          <p className="text-xs text-muted-foreground">{tasks.length} total active work items</p>
+        </div>
+        <button
+          onClick={() => setIsAdding(!isAdding)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add Task
+        </button>
+      </div>
+
+      {isAdding && (
+        <form onSubmit={handleAddTask} className="flex gap-2 p-3 rounded-xl border border-border bg-muted/40">
+          <input
+            type="text"
+            placeholder="Enter task title..."
+            value={newTaskTitle}
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+            autoFocus
+          />
+          <select
+            value={activeColumn}
+            onChange={(e) => setActiveColumn(e.target.value as any)}
+            className="px-2 py-1.5 text-xs rounded-lg border border-border bg-background"
+          >
+            <option value="todo">To Do</option>
+            <option value="in-progress">In Progress</option>
+            <option value="done">Completed</option>
+          </select>
+          <button type="submit" className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground">
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsAdding(false)}
+            className="px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-background hover:bg-muted"
+          >
+            Cancel
+          </button>
+        </form>
+      )}
+
+      {/* Kanban Columns */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {COLUMNS.map((col) => {
+          const colTasks = tasks.filter((t) => t.status === col.id);
+          const ColIcon = col.icon;
+
+          return (
+            <div key={col.id} className="flex flex-col rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <ColIcon className={cn("h-4 w-4", col.color)} />
+                  <span className="text-sm font-semibold text-foreground">{col.title}</span>
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
+                  {colTasks.length}
+                </span>
+              </div>
+
+              <div className="space-y-2.5 min-h-[140px]">
+                {colTasks.length === 0 ? (
+                  <div className="h-28 flex items-center justify-center border border-dashed border-border rounded-lg text-xs text-muted-foreground">
+                    No tasks in this lane
+                  </div>
+                ) : (
+                  colTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="p-3 rounded-lg border border-border bg-background shadow-xs hover:border-foreground/20 transition-all space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-xs font-semibold text-foreground leading-snug">{task.title}</span>
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                          title="Delete task"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                            {task.tag}
+                          </Badge>
+                          <span
+                            className={cn(
+                              "text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
+                              task.priority === "high"
+                                ? "bg-red-500/10 text-red-500"
+                                : task.priority === "medium"
+                                ? "bg-amber-500/10 text-amber-500"
+                                : "bg-emerald-500/10 text-emerald-500"
+                            )}
+                          >
+                            {task.priority}
+                          </span>
+                        </div>
+
+                        {/* Column Navigation Arrows */}
+                        <div className="flex items-center gap-1">
+                          {col.id !== "todo" && (
+                            <button
+                              onClick={() => moveTask(task.id, "prev")}
+                              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                              title="Move left"
+                            >
+                              <ArrowLeft className="h-3 w-3" />
+                            </button>
+                          )}
+                          {col.id !== "done" && (
+                            <button
+                              onClick={() => moveTask(task.id, "next")}
+                              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                              title="Move right"
+                            >
+                              <ArrowRight className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
-}`,
+}
+`,
         },
       ],
     },
